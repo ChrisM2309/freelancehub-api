@@ -1,4 +1,5 @@
-import { Controller, Body, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Post, Req, UnauthorizedException, UseGuards } from '@nestjs/common';
+import { ApiBearerAuth } from '@nestjs/swagger';
 
 import { ServicesService } from './services.service';
 import { CreateServiceDto } from './dto/create-service.dto';
@@ -7,16 +8,24 @@ import { AuthenticatedUser} from 'src/auth/interfaces/authenticated-user.interfa
 
 // tipo para manejar la info del usuario desde el requeuest 
 
-type RequestWithUser = { user: AuthenticatedUser };
+type RequestWithUser = { user?: AuthenticatedUser };
 @Controller('services')
 export class ServicesController {
 
     // inyectar el servicio de servicios
     constructor( private readonly servicesService: ServicesService){}
 
+    @ApiBearerAuth()
+    @UseGuards(JwtAuthGuard)
     @Post()
     create(@Body() createServiceDto: CreateServiceDto, @Req() req: RequestWithUser){
-        return this.servicesService.create(createServiceDto, req.user.userId);
+        const userId = req.user?.userId;
+
+        if (!userId) {
+            throw new UnauthorizedException('Usuario no autenticado');
+        }
+
+        return this.servicesService.create(createServiceDto, userId);
     }
 
 }

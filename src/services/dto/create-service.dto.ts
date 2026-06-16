@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsString } from 'class-validator';
+import { Type } from 'class-transformer';
+import { IsNotEmpty, IsNumber, IsString, Min } from 'class-validator';
 
 export class CreateServiceDto {    
     // titulo de servicio
@@ -32,8 +33,12 @@ export class CreateServiceDto {
 
     // precio del servicio 
     @ApiProperty({
+        type: Number,
         example: 250.00,
         description: 'Precio del servicio',
     })
+    @Type(() => Number)
+    @IsNumber()
+    @Min(0)
     price: number; 
 }
